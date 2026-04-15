@@ -1,0 +1,41 @@
+---
+
+- name: 天网平台 - Linux系统初始化与标准化
+  hosts: targets
+  become: yes 
+  gather_facts: yes
+
+  tasks:
+
+    - name: 1. 关闭并禁用firewalld防火墙
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: 2. 设置主机名规范
+      hostname:
+        name: "skynet-node-{{ inventory_hostname_short }}"
+
+    - name: 3. 配置系统时区为 Asia/Shanghai
+      timezone:
+        name: Asia/Shanghai
+
+    - name: 4. 安装基础运维工具包
+      package:
+        name:
+          - vim
+          - wget
+          - net-tools
+          - bash-completion
+          - telnet
+          - bind-utils
+        state: present
+
+    - name: 5. 优化内核参数 - 调整文件句柄数
+      sysctl:
+        name: fs.file-max
+        value: '6553560'
+        sysctl_set: yes
+        state: present
+        reload: yes
